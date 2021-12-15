@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScrapWeb.Controller;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,6 +16,26 @@ namespace ScrapWeb
         public Form1()
         {
             InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            GetScrapData get = new GetScrapData();
+
+
+            var urlList= get.GetUrlFromFile();
+
+            if (urlList.Success && urlList.Data.Count>0)
+            {
+                foreach (var url in urlList.Data)
+                {
+                     get.GetPageSource(url);
+                }
+
+                
+            }
+
+
         }
     }
 }
