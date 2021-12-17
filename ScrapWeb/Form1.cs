@@ -26,13 +26,20 @@ namespace ScrapWeb
             var urlList= get.GetUrlFromFile();
 
             if (urlList.Success && urlList.Data.Count>0)
-            {
-                foreach (var url in urlList.Data)
+            { 
+               var pageSources = get.GetPageSources(urlList.Data);
+
+                if (pageSources.Success && pageSources.Data.Count>0 )
                 {
-                     get.GetPageSource(url);
+                    foreach (var item in pageSources.Data)
+                    {
+
+                        //kendim arkada url gönderiyorum bir alan içinde
+                        var data = get.GetirBahisleri(item,item.OptionStopperNodeName);
+                    }
+
                 }
 
-                
             }
 
 

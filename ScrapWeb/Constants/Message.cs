@@ -18,6 +18,13 @@ namespace ScrapWeb.Constants
 
         public static string URL_BASARISIZ_CATCH_MESAJI = "Urller okunamadı CATCH'E TAKILDI. (GetScrapData > GetUrlFromFile)";
 
+        public static string DOKUMAN_NULL = "Döküman Null gelemez";
+
+        public static string PAGE_SOURCE_BOS = "Driver page source boş.";
+
+        public static string PAGE_SOURCE_TRYCATCH = "Page Source Alınırken try catch'e takıldı.";
+
+        public static string BAHISLER_NODE_BULUNAMADI = "Node Count (Getir Bahisleri) null veya bulunamadı alanlar.";
 
 
     }

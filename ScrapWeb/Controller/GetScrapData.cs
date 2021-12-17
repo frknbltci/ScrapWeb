@@ -25,14 +25,14 @@ namespace ScrapWeb.Controller
         /// </summary>
         /// <param name="document"></param>
         /// <returns></returns>
-        public DataResult<List<BahisModel>> GetirBahisleri(HtmlDocument document)
+        public DataResult<List<BahisModel>> GetirBahisleri(HtmlDocument document,string url)
         {
             var modLast = new List<BahisModel>();
 
             if (document !=null)
             {
                 var nodeCount = document.DocumentNode.SelectNodes("//div[contains(@class,'smart-col-item')]/div");
-                if (nodeCount.Count > 0)
+                if (nodeCount !=null && nodeCount.Count > 0)
                 {
                     foreach (HtmlNode Node in nodeCount)
                     {
@@ -75,49 +75,78 @@ namespace ScrapWeb.Controller
                     }
 
                 }
+                else
+                {
+                    LoggerTxt loggerTxt = new LoggerTxt();
+                    loggerTxt.Log(Message.BAHISLER_NODE_BULUNAMADI);
+                }
 
-                return new SuccessDataResult<List<BahisModel>>(modLast, Message.VERI_CEKME_BASARILI);
+                
             }
             else
             {
 
-                //Logg
+                LoggerTxt loggerTxt = new LoggerTxt();
+                loggerTxt.Log(Message.DOKUMAN_NULL);
 
-                return new ErrorDataResult<List<BahisModel>>(Message.VERI_CEKME_BASARISIZ);
+               // return new ErrorDataResult<List<BahisModel>>(Message.VERI_CEKME_BASARISIZ);
             }
+
+            return new SuccessDataResult<List<BahisModel>>(modLast, Message.VERI_CEKME_BASARILI);
+
         }
 
 
 
 
-        public HtmlDocument GetPageSource(string url)
+        public DataResult<List<HtmlDocument>> GetPageSources(List<string> urlList)
         {
-            HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
-
-            //  Thread.Sleep(2000);
-            // var data =dokuman.DocumentNode.SelectSingleNode("/html/body/app-root/app-out-component/div[1]/main/app-placebet/div/div/fixture-detail/div/div[2]/div/div/div[1]/div/div[1]/span").InnerText;
-
-
-            var chromeOptions = new ChromeOptions();
-            chromeOptions.AddArguments("headless");
-
-            // var cdRunpath = @"~/chromedrive.exe";
-            var path = System.Windows.Forms.Application.StartupPath;
-           // var dataX = Path.Combine("C:/Users/pc/source/repos/BetNewScrap/YapılabilirlikScrapBetNew");
-            IWebDriver driver = new ChromeDriver(path, chromeOptions);
-
-            Thread.Sleep(2000);
-            driver.Navigate().GoToUrl(url);
+            List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
+            try
+            {
+               
+                var chromeOptions = new ChromeOptions();
+                chromeOptions.AddArguments("headless");
+                var path = System.Windows.Forms.Application.StartupPath;
+                IWebDriver driver = new ChromeDriver(path, chromeOptions);
+                Thread.Sleep(1000);
 
 
-            var timeout = 3000; /* Maximum wait time of 10 seconds */
-            var wait = new WebDriverWait(driver, TimeSpan.FromMilliseconds(timeout));
-            wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
+                foreach (var url in urlList)
+                {
+                    HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
+                    driver.Navigate().GoToUrl(url);
+                    Thread.Sleep(1000);
+                    if (!string.IsNullOrEmpty(driver.PageSource))
+                    {
+                        dokuman.LoadHtml(driver.PageSource);
+                        dokuman.OptionStopperNodeName = url.ToString();
+                    }
+                    else
+                    {
+                        var log = new LoggerTxt();
+                        log.Log(Message.PAGE_SOURCE_BOS);
+                    }
+                    returnDocuments.Add(dokuman);
+                }
+                /*
+                            var wait = new WebDriverWait(driver, TimeSpan.FromMilliseconds(timeout));
+                            wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
+                            Thread.Sleep(2000);
+                            */
 
-            Thread.Sleep(2000);
-            dokuman.LoadHtml(driver.PageSource);
+                driver.Quit();
+            }
+            catch (Exception hata)
+            {
+                var log = new LoggerTxt();
+                log.Log(hata.ToString() + Message.PAGE_SOURCE_TRYCATCH);
+                
 
-            return dokuman;
+            }
+
+            
+            return new DataResult<List<HtmlDocument>>(returnDocuments, true);
         }
 
 
@@ -143,8 +172,6 @@ namespace ScrapWeb.Controller
                     var log = new LoggerTxt();
                     log.Log(Message.URL_BASARISIZ_MESAJI);
                 }
-
-                
 
             }
             catch (Exception hata)
