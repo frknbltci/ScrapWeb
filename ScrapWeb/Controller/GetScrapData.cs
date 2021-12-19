@@ -28,69 +28,81 @@ namespace ScrapWeb.Controller
         public DataResult<List<BahisModel>> GetirBahisleri(HtmlDocument document,string url)
         {
             var modLast = new List<BahisModel>();
-
-            if (document !=null)
+            try
             {
-                var nodeCount = document.DocumentNode.SelectNodes("//div[contains(@class,'smart-col-item')]/div");
-                if (nodeCount !=null && nodeCount.Count > 0)
+                if (document != null)
                 {
-                    foreach (HtmlNode Node in nodeCount)
+
+
+                    var nodeCount = document.DocumentNode.SelectNodes("//div[contains(@class,'smart-col-item')]/div");
+                    if (nodeCount != null && nodeCount.Count > 0)
                     {
-
-                        var model = new BahisModel();
-                        model.Oranlar = new List<string>();
-                        // anaBaslik
-                        var Baslik = Node.SelectSingleNode(Node.XPath + "/div[contains(@class,'modul-accordion match-market')]/div[contains(@class,'modul-header')]/span").InnerText;
-                        model.Baslik = Baslik;
-                        //basligin iceriği modulcontent 
-                        var ModuleContent = Node.SelectNodes(Node.XPath + "/div[contains(@class,'modul-accordion match-market')]/div[contains(@class,'modul-content')]/div");
-
-                        if (ModuleContent != null && ModuleContent.Count > 0)
+                        foreach (HtmlNode Node in nodeCount)
                         {
-                            foreach (HtmlNode htmlNode in ModuleContent)
+
+                            var model = new BahisModel();
+                            model.Oranlar = new List<string>();
+                            // anaBaslik
+                            var Baslik = Node.SelectSingleNode(Node.XPath + "/div[contains(@class,'modul-accordion match-market')]/div[contains(@class,'modul-header')]/span").InnerText;
+                            model.Baslik = Baslik;
+                            //basligin iceriği modulcontent 
+                            var ModuleContent = Node.SelectNodes(Node.XPath + "/div[contains(@class,'modul-accordion match-market')]/div[contains(@class,'modul-content')]/div[contains(@class,'modul-accordion bet-type-group')]");
+
+                            if (ModuleContent != null && ModuleContent.Count > 0)
                             {
-                                var altBaslik = htmlNode.SelectSingleNode(htmlNode.XPath + "/div[contains(@class,'modul-header')]/span").InnerText;
-
-                                model.Oranlar.Add("Baslik : ->" + altBaslik);
-                                model.Oranlar.Add(" ");
-                                var icModuleCont = htmlNode.SelectNodes(htmlNode.XPath + "/div[contains(@class,'modul-content')]/div[contains(@class,'flex-container bet-type-btn-group')]/a");
-
-                                if (icModuleCont != null && icModuleCont.Count > 0)
+                                foreach (HtmlNode htmlNode in ModuleContent)
                                 {
-                                    foreach (var item in icModuleCont)
+                                    var altBaslik = htmlNode.SelectSingleNode(htmlNode.XPath + "/div[contains(@class,'modul-header')]/span").InnerText;
+
+
+                                    model.Oranlar.Add("Başlık :" + altBaslik);
+
+                                    var icModuleCont = htmlNode.SelectNodes(htmlNode.XPath + "/div[contains(@class,'modul-content')]/div[contains(@class,'flex-container bet-type-btn-group')]/a");
+
+                                    if (icModuleCont != null && icModuleCont.Count > 0)
                                     {
+                                        foreach (var item in icModuleCont)
+                                        {
 
-                                        //Bahislerin içinde gezip Yazıları ve Oranları aldığımız kısım
-                                        var Bahis = item.SelectSingleNode(item.XPath + "/span[contains(@class,'flex-item bet-btn-text')]").InnerText;
-                                        var Oran = item.SelectSingleNode(item.XPath + "/span[contains(@class,'bet-btn-odd')]").InnerText;
+                                            //Bahislerin içinde gezip Yazıları ve Oranları aldığımız kısım
+                                            var Bahis = item.SelectSingleNode(item.XPath + "/span[contains(@class,'flex-item bet-btn-text')]").InnerText;
+                                            var Oran = item.SelectSingleNode(item.XPath + "/span[contains(@class,'bet-btn-odd')]").InnerText;
 
-                                        model.Oranlar.Add(Bahis + " " + Oran);
+                                            model.Oranlar.Add(Bahis + " " + Oran);
+                                        }
                                     }
-                                }
 
-                                modLast.Add(model);
+
+                                }
                             }
+                            modLast.Add(model);
                         }
 
                     }
+                    else
+                    {
+                        LoggerTxt loggerTxt = new LoggerTxt();
+                        loggerTxt.Log(Message.BAHISLER_NODE_BULUNAMADI + " Url : " + url);
+                    }
+
 
                 }
                 else
                 {
-                    LoggerTxt loggerTxt = new LoggerTxt();
-                    loggerTxt.Log(Message.BAHISLER_NODE_BULUNAMADI);
-                }
 
+                    LoggerTxt loggerTxt = new LoggerTxt();
+                    loggerTxt.Log(Message.DOKUMAN_NULL);
+
+                    // return new ErrorDataResult<List<BahisModel>>(Message.VERI_CEKME_BASARISIZ);
+                }
+            }
+            catch (Exception hata)
+            {
+                LoggerTxt loggerTxt = new LoggerTxt();
+                loggerTxt.Log(hata.ToString() + " "+ Message.BAHIS_GETIR_CATCH);
                 
             }
-            else
-            {
-
-                LoggerTxt loggerTxt = new LoggerTxt();
-                loggerTxt.Log(Message.DOKUMAN_NULL);
-
-               // return new ErrorDataResult<List<BahisModel>>(Message.VERI_CEKME_BASARISIZ);
-            }
+            
 
             return new SuccessDataResult<List<BahisModel>>(modLast, Message.VERI_CEKME_BASARILI);
 
@@ -101,6 +113,7 @@ namespace ScrapWeb.Controller
 
         public DataResult<List<HtmlDocument>> GetPageSources(List<string> urlList)
         {
+
             List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
             try
             {
@@ -109,18 +122,26 @@ namespace ScrapWeb.Controller
                 chromeOptions.AddArguments("headless");
                 var path = System.Windows.Forms.Application.StartupPath;
                 IWebDriver driver = new ChromeDriver(path, chromeOptions);
-                Thread.Sleep(1000);
-
-
+              
                 foreach (var url in urlList)
                 {
                     HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
                     driver.Navigate().GoToUrl(url);
-                    Thread.Sleep(1000);
+                    Thread.Sleep(2500);
                     if (!string.IsNullOrEmpty(driver.PageSource))
                     {
-                        dokuman.LoadHtml(driver.PageSource);
-                        dokuman.OptionStopperNodeName = url.ToString();
+                       // var isdata = wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
+                        
+                            dokuman.LoadHtml(driver.PageSource);
+                            dokuman.OptionStopperNodeName = url.ToString();
+                        if (!yuklendiMi(dokuman))
+                        {
+                            driver.Navigate().GoToUrl(url);
+                            Thread.Sleep(2500);
+                            dokuman.LoadHtml(driver.PageSource);
+                           
+                        }
+
                     }
                     else
                     {
@@ -142,7 +163,6 @@ namespace ScrapWeb.Controller
                 var log = new LoggerTxt();
                 log.Log(hata.ToString() + Message.PAGE_SOURCE_TRYCATCH);
                 
-
             }
 
             
@@ -185,5 +205,77 @@ namespace ScrapWeb.Controller
 
         }
 
+
+
+        public void WriteFileTxtBahis(List<BahisModel> bahisModel, string url)
+        {
+            var fileName = "Bahis/" + DateTime.Now.ToString("dd.MM.yyyy") + " bahis";
+
+            if (bahisModel.Count==0)
+            {
+
+                File.AppendAllText(fileName, Environment.NewLine + "**************************" + Environment.NewLine);
+                File.AppendAllText(fileName, url);
+                File.AppendAllText(fileName, DateTime.Now.ToString("dd.MM.yyyy HH:mm"));
+                File.AppendAllText(fileName, Environment.NewLine + "**************************" + Environment.NewLine);
+            }
+
+            if (bahisModel.Count>0)
+            {
+                foreach (var item in bahisModel)
+                {
+                    File.AppendAllText(fileName, Environment.NewLine + "**************************" + Environment.NewLine);
+                    File.AppendAllText(fileName, item.Baslik);
+                    File.AppendAllText(fileName, DateTime.Now.ToString("dd.MM.yyyy HH:mm"));
+                    File.AppendAllText(fileName, Environment.NewLine + "**************************" + Environment.NewLine);
+
+                    foreach (var bahis in item.Oranlar)
+                    {
+                        if (bahis.Contains("Başlık"))
+                        {
+                            File.AppendAllText(fileName, Environment.NewLine);
+                        }
+                        File.AppendAllText(fileName, bahis);
+
+                    }
+                }
+            }
+
+            
+        }
+
+
+        private bool yuklendiMi(HtmlDocument document)
+        {
+
+            //Veri sayfada yok ise 
+            bool controlData = document.DocumentNode.SelectSingleNode("//*[@id='container-main']/fixture-detail/message-box/div/div") == null ? true : false;
+
+            if (controlData)
+            {
+                //data gelmesinin kontrolü
+
+                var controlOfBahisData = document.DocumentNode.SelectNodes("//div[contains(@class,'smart-col-item')]/div");
+
+                if (controlOfBahisData != null && controlOfBahisData.Count>0 )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                //sayfa geldi veri bilgisi bulunamadı
+
+                return true;
+
+            }
+            
+
+   
+        }
     }
 }

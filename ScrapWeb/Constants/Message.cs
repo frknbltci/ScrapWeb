@@ -26,6 +26,11 @@ namespace ScrapWeb.Constants
 
         public static string BAHISLER_NODE_BULUNAMADI = "Node Count (Getir Bahisleri) null veya bulunamadı alanlar.";
 
+        public static string URL_BAHISLERI_DONMEDI ="Urli'nin bahisleri dönmedi.";
+
+        public static string BAHIS_GETIR_CATCH = "Bahisler getirilirken catch'e düştü. GetirBahisleri Cath";
+
+       
 
     }
 }

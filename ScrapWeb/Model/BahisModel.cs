@@ -9,8 +9,9 @@ namespace ScrapWeb.Model
     public class BahisModel
     {
         public string Baslik { get; set; }
-        public string AltBaslik { get; set; }
 
+       // public string AltBaslik { get; set; }
+      
         public List<string> Oranlar { get; set; }
     }
 }
