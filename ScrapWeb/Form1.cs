@@ -13,6 +13,8 @@ namespace ScrapWeb
 {
     public partial class Form1 : Form
     {
+
+        NotifyIcon MyIcon = new NotifyIcon();
         public Form1()
         {
             InitializeComponent();
@@ -29,41 +31,52 @@ namespace ScrapWeb
         private void Form1_Load(object sender, EventArgs e)
         {
 
-            if (dakikaAl.Value>0)
-            {
-                timer1.Interval = (int)dakikaAl.Value;
-                timer1.Enabled = true;
-            }
-            else
-            {
-                //timer setlenmemiş ise 5 dakikada bir.
-                timer1.Interval = 5000;
-                timer1.Enabled = true;
-            }
 
+            timer1.Enabled = false;
+
+           
+
+
+        }
+        
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+
+            
+
+            Task.Run(() =>
+            {
+
+                run();
+
+            });
+        }
+
+        private void run()
+        {
             GetScrapData get = new GetScrapData();
 
 
-            var urlList= get.GetUrlFromFile();
+            var urlList = get.GetUrlFromFile();
 
-            if (urlList.Success && urlList.Data.Count>0)
-            { 
-               var pageSources = get.GetPageSources(urlList.Data);
+            if (urlList.Success && urlList.Data.Count > 0)
+            {
+                var pageSources = get.GetPageSources(urlList.Data);
 
-                if (pageSources.Success && pageSources.Data.Count>0 )
+                if (pageSources.Success && pageSources.Data.Count > 0)
                 {
                     foreach (var item in pageSources.Data)
                     {
 
                         //kendim arkada url gönderiyorum bir alan içinde
-                        var bahisler = get.GetirBahisleri(item,item.OptionStopperNodeName);
-                        if (bahisler.Data.Count>0)
+                        var bahisler = get.GetirBahisleri(item, item.OptionStopperNodeName);
+                        if (bahisler.Data.Count > 0)
                         {
                             get.WriteFileTxtBahis(bahisler.Data, item.OptionStopperNodeName);
                         }
                         else
                         {
-                            get.WriteFileTxtBahis(new List<Model.BahisModel>(),item.OptionStopperNodeName+" "+ Constants.Message.URL_BAHISLERI_DONMEDI);
+                            get.WriteFileTxtBahis(new List<Model.BahisModel>(), item.OptionStopperNodeName + " " + Constants.Message.URL_BAHISLERI_DONMEDI);
                         }
 
                     }
@@ -72,23 +85,53 @@ namespace ScrapWeb
 
             }
 
-
         }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-
-        }
-
         
         
 
         private void button1_Click(object sender, EventArgs e)
         {
+            textBox1.Text = System.Windows.Forms.Application.StartupPath.ToString();
+
+           // MessageBox.Show(System.Windows.Forms.Application.StartupPath.ToString());
             if (dakikaAl.Value>0)
             {
                 timer1.Interval= (int)TimeSpan.FromMinutes((double)dakikaAl.Value).TotalMilliseconds;
+
+                timer1.Enabled = true;
+                timer1.Start();
             } 
+        }
+
+
+
+
+
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {   
+            if (FormWindowState.Minimized == WindowState)
+            {
+                Hide();
+                MyIcon.Visible = true;
+                MyIcon.Icon = SystemIcons.Application;
+                MyIcon.Text = "Mikrojump V16 Entegrasyon";
+                MyIcon.BalloonTipTitle = "Veri Çekme Uygulaması";
+                MyIcon.BalloonTipText = "Veri Çekme Uygulaması Çalışıyor ";
+                MyIcon.BalloonTipIcon = ToolTipIcon.Info;
+                MyIcon.ShowBalloonTip(30000);
+                MyIcon.MouseDoubleClick += new MouseEventHandler(MyIcon_MouseDoubleClick);
+            }
+        }
+        void MyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Show();
+            MyIcon.Visible = false;
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
         }
     }
 }

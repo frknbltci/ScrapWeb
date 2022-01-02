@@ -117,11 +117,19 @@ namespace ScrapWeb.Controller
             List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
             try
             {
+
+
+                var driverService = ChromeDriverService.CreateDefaultService();
+                driverService.HideCommandPromptWindow = true;
                
+               
+
                 var chromeOptions = new ChromeOptions();
                 chromeOptions.AddArguments("headless");
+                
+                
                 var path = System.Windows.Forms.Application.StartupPath;
-                IWebDriver driver = new ChromeDriver(path, chromeOptions);
+                IWebDriver driver = new ChromeDriver(driverService,chromeOptions);
               
                 foreach (var url in urlList)
                 {
@@ -209,7 +217,7 @@ namespace ScrapWeb.Controller
 
         public void WriteFileTxtBahis(List<BahisModel> bahisModel, string url)
         {
-            var fileName = "Bahis/" + DateTime.Now.ToString("dd.MM.yyyy") + " bahis";
+            var fileName = "Bahis/" + DateTime.Now.ToString("dd.MM.yyyy") + " "+ url.Substring(url.Length-8);
 
             if (bahisModel.Count==0)
             {
