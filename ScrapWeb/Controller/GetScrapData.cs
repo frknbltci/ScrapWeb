@@ -109,6 +109,27 @@ namespace ScrapWeb.Controller
         }
 
 
+        public DataResult<List<string>> GetirMusabakaLinkeri(List<string> urlList)
+        {
+            var driverService = ChromeDriverService.CreateDefaultService();
+            driverService.HideCommandPromptWindow = true;
+
+
+
+            var chromeOptions = new ChromeOptions();
+            chromeOptions.AddArguments("headless");
+
+
+            var path = System.Windows.Forms.Application.StartupPath;
+            IWebDriver driver = new ChromeDriver(driverService, chromeOptions);
+
+
+            //Urller içerisinden bottom kaldırılıp maçların esas linkleri alınacak sonra işleme dahil edilecek
+
+
+            return new DataResult<List<string>>(new List<string>(), true);
+        }
+
 
 
         public DataResult<List<HtmlDocument>> GetPageSources(List<string> urlList)
@@ -178,6 +199,12 @@ namespace ScrapWeb.Controller
         }
 
 
+       
+
+        /// <summary>
+        /// Url txt den verilen linkleri alır 
+        /// </summary>
+        /// <returns></returns>
         public DataResult<List<string>> GetUrlFromFile()
         {
 
