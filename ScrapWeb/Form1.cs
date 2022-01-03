@@ -31,18 +31,13 @@ namespace ScrapWeb
         private void Form1_Load(object sender, EventArgs e)
         {
 
-
             timer1.Enabled = false;
-
-           
 
 
         }
         
         private void timer1_Tick(object sender, EventArgs e)
         {
-
-            
 
             Task.Run(() =>
             {
