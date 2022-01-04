@@ -57,6 +57,7 @@ namespace ScrapWeb
             if (urlList.Success && urlList.Data.Count > 0)
             {
                 var pageSources = get.GetPageSources(urlList.Data);
+                var pageSorucesNew = get.GetirMusabakaLinkeri(urlList.Data);
 
                 if (pageSources.Success && pageSources.Data.Count > 0)
                 {
