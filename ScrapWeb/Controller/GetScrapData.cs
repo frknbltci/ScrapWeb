@@ -109,23 +109,69 @@ namespace ScrapWeb.Controller
         }
 
 
+        
         public DataResult<List<string>> GetirMusabakaLinkeri(List<string> urlList)
         {
+            //try catch
+
+            bool isbottom=false;
             var driverService = ChromeDriverService.CreateDefaultService();
             driverService.HideCommandPromptWindow = true;
 
-
-
+            List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
             var chromeOptions = new ChromeOptions();
-            chromeOptions.AddArguments("headless");
+        //    chromeOptions.AddArguments("headless");
 
 
             var path = System.Windows.Forms.Application.StartupPath;
             IWebDriver driver = new ChromeDriver(driverService, chromeOptions);
 
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
+            
             //Urller içerisinden bottom kaldırılıp maçların esas linkleri alınacak sonra işleme dahil edilecek
 
+            foreach (var url in urlList)
+            {
+                HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
+                driver.Navigate().GoToUrl(url);
+                Thread.Sleep(2500);
+                if (!string.IsNullOrEmpty(driver.PageSource))
+                {
+                    isbottom = dokuman.DocumentNode.SelectSingleNode("//*[@id='allCnt']/app-bottom-menu/div[1]") != null ? true : false;
+                    if (isbottom)
+                    {
+                        var bottom = driver.FindElement(By.XPath("//*[@id='allCnt']/app-bottom-menu/div[1]"));
+                        js.ExecuteScript("arguments[0].style.display = 'none';", bottom);
+                    }
+
+
+                    //Maçları alıyor buradan url leri alacağız
+                    ////div[contains(@class,'fixture-container')]//div[contains(@class,'match-content')]
+
+
+                  
+
+                    dokuman.LoadHtml(driver.PageSource);
+                    dokuman.OptionStopperNodeName = url.ToString();
+                    if (!yuklendiMi(dokuman))
+                    {
+                        driver.Navigate().GoToUrl(url);
+                        Thread.Sleep(2500);
+                        dokuman.LoadHtml(driver.PageSource);
+
+                    }
+
+                }
+                else
+                {
+                    var log = new LoggerTxt();
+                    log.Log(Message.PAGE_SOURCE_BOS);
+                }
+                returnDocuments.Add(dokuman);
+            }
+
+            driver.Quit();
 
             return new DataResult<List<string>>(new List<string>(), true);
         }
@@ -138,16 +184,12 @@ namespace ScrapWeb.Controller
             List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
             try
             {
-
-
                 var driverService = ChromeDriverService.CreateDefaultService();
                 driverService.HideCommandPromptWindow = true;
-               
                
 
                 var chromeOptions = new ChromeOptions();
                 chromeOptions.AddArguments("headless");
-                
                 
                 var path = System.Windows.Forms.Application.StartupPath;
                 IWebDriver driver = new ChromeDriver(driverService,chromeOptions);
@@ -163,13 +205,13 @@ namespace ScrapWeb.Controller
                         
                             dokuman.LoadHtml(driver.PageSource);
                             dokuman.OptionStopperNodeName = url.ToString();
-                        if (!yuklendiMi(dokuman))
-                        {
-                            driver.Navigate().GoToUrl(url);
-                            Thread.Sleep(2500);
-                            dokuman.LoadHtml(driver.PageSource);
-                           
-                        }
+                        /*   if (!yuklendiMi(dokuman))
+                           {
+                               driver.Navigate().GoToUrl(url);
+                               Thread.Sleep(2500);
+                               dokuman.LoadHtml(driver.PageSource);
+
+                           }*/
 
                     }
                     else
