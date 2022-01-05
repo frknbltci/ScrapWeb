@@ -146,21 +146,35 @@ namespace ScrapWeb.Controller
                     }
 
 
-                    //Maçları alıyor buradan url leri alacağız
+                    //Maçları alıyor buradan url leri alacağız 
                     ////div[contains(@class,'fixture-container')]//div[contains(@class,'match-content')]
-
-
-                  
 
                     dokuman.LoadHtml(driver.PageSource);
                     dokuman.OptionStopperNodeName = url.ToString();
+                    var matches = dokuman.DocumentNode.SelectNodes("//div[contains(@class,'fixture-container')]//div[contains(@class,'match-content')]");
+
+                    if (matches.Count>0)
+                    {
+                        foreach (HtmlNode item in matches)
+                        {
+                            //her maçın istediğimiz formattıki Url'ini almak için 
+                            var MatchUrl =item.SelectSingleNode(item.XPath + "/a").GetAttributes("href");
+                            var fullUrl = url.Replace("m.", "");
+                            var uri = new Uri(fullUrl);
+                            var datta = "www."+uri.Host + MatchUrl.FirstOrDefault().Value;
+
+                            //bunuda listeye at kontrolleri ve tekrarları yap linkler tamam
+
+                        }
+                    }
+                    /*
                     if (!yuklendiMi(dokuman))
                     {
                         driver.Navigate().GoToUrl(url);
                         Thread.Sleep(2500);
                         dokuman.LoadHtml(driver.PageSource);
 
-                    }
+                    }*/
 
                 }
                 else
@@ -205,13 +219,13 @@ namespace ScrapWeb.Controller
                         
                             dokuman.LoadHtml(driver.PageSource);
                             dokuman.OptionStopperNodeName = url.ToString();
-                        /*   if (!yuklendiMi(dokuman))
+                          if (!yuklendiMi(dokuman))
                            {
                                driver.Navigate().GoToUrl(url);
                                Thread.Sleep(2500);
                                dokuman.LoadHtml(driver.PageSource);
 
-                           }*/
+                           }
 
                     }
                     else
