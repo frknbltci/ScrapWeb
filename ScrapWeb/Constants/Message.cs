@@ -22,6 +22,8 @@ namespace ScrapWeb.Constants
 
         public static string PAGE_SOURCE_BOS = "Driver page source boş.";
 
+        public static string PAGE_SOURCE_BOS_02 = "Driver page source boş. MessageCode02";
+
         public static string PAGE_SOURCE_TRYCATCH = "Page Source Alınırken try catch'e takıldı.";
 
         public static string BAHISLER_NODE_BULUNAMADI = "Node Count (Getir Bahisleri) null veya bulunamadı alanlar.";
@@ -30,7 +32,13 @@ namespace ScrapWeb.Constants
 
         public static string BAHIS_GETIR_CATCH = "Bahisler getirilirken catch'e düştü. GetirBahisleri Cath";
 
-       
+        public static string LINK_ARIZALI_VEYA_MACYOK = "Link arızalı veya listede maç yok. ";
+
+        public static string GETIR_MUSABAKALARI_TRYCATCH = "GetirMüsabakalari operasyonu çalışırken try catch'e takıldı.";
+
+        public static string GETIR_MUSABAKALARI_MACIN_URLSI_HATA = "GetirMüsabakalari operasyonunda maçlardan url çekilemedi.";
+
+
 
     }
 }

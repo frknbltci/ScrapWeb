@@ -38,13 +38,13 @@ namespace ScrapWeb
         
         private void timer1_Tick(object sender, EventArgs e)
         {
+            run();
+            //Task.Run(() =>
+            //{
 
-            Task.Run(() =>
-            {
+            //    run();
 
-                run();
-
-            });
+            //});
         }
 
         private void run()
@@ -56,30 +56,37 @@ namespace ScrapWeb
 
             if (urlList.Success && urlList.Data.Count > 0)
             {
-               // var pageSources =  get.GetPageSources(urlList.Data);
 
-                //burda linkleri concat edip yola devam edicez 
-                var pageSorucesNew = get.GetirMusabakaLinkeri(urlList.Data);
+                var macLinkleri = get.GetirMusabakaLinkeri(urlList.Data);
+            //    var macLinkleri = new List<string>();
+            ///var data = "https://gizabet741.com/tr/bet/fixture-detail/36883182";
 
-                //if (pageSources.Success && pageSources.Data.Count > 0)
-                //{
-                //    foreach (var item in pageSources.Data)
-                //    {
+                //macLinkleri.Add(data);
+                if (macLinkleri.Data.Count>0)
+                {
+                    var pageSources = get.GetPageSources(macLinkleri.Data);
 
-                //        //kendim arkada url gönderiyorum bir alan içinde
-                //        var bahisler = get.GetirBahisleri(item, item.OptionStopperNodeName);
-                //        if (bahisler.Data.Count > 0)
-                //        {
-                //            get.WriteFileTxtBahis(bahisler.Data, item.OptionStopperNodeName);
-                //        }
-                //        else
-                //        {
-                //            get.WriteFileTxtBahis(new List<Model.BahisModel>(), item.OptionStopperNodeName + " " + Constants.Message.URL_BAHISLERI_DONMEDI);
-                //        }
+                    if (pageSources.Success && pageSources.Data.Count > 0)
+                    {
+                        foreach (var item in pageSources.Data)
+                        {
 
-                //    }
+                            //kendim arkada url gönderiyorum bir alan içinde
+                            var bahisler = get.GetirBahisleri(item, item.OptionStopperNodeName);
+                            if (bahisler.Data.Count > 0)
+                            {
+                                get.WriteFileTxtBahis(bahisler.Data, item.OptionStopperNodeName);
+                            }
+                            else
+                            {
+                                get.WriteFileTxtBahis(new List<Model.BahisModel>(), item.OptionStopperNodeName + " " + Constants.Message.URL_BAHISLERI_DONMEDI);
+                            }
 
-                //}
+                        }
+
+                    }
+                }
+               
 
             }
 

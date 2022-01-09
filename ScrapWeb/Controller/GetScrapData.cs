@@ -114,80 +114,99 @@ namespace ScrapWeb.Controller
         {
             //try catch
 
-            bool isbottom=false;
-            var driverService = ChromeDriverService.CreateDefaultService();
-            driverService.HideCommandPromptWindow = true;
+            List<string> newUrlList = new List<string>();
 
-            List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
-            var chromeOptions = new ChromeOptions();
-        //    chromeOptions.AddArguments("headless");
-
-
-            var path = System.Windows.Forms.Application.StartupPath;
-            IWebDriver driver = new ChromeDriver(driverService, chromeOptions);
-
-            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-
-            
-            //Urller içerisinden bottom kaldırılıp maçların esas linkleri alınacak sonra işleme dahil edilecek
-
-            foreach (var url in urlList)
+            try
             {
-                HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
-                driver.Navigate().GoToUrl(url);
-                Thread.Sleep(2500);
-                if (!string.IsNullOrEmpty(driver.PageSource))
+                bool isbottom = false;
+                var driverService = ChromeDriverService.CreateDefaultService();
+                driverService.HideCommandPromptWindow = true;
+                
+
+                List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
+                var chromeOptions = new ChromeOptions();
+                chromeOptions.AddArguments("headless");
+               // chromeOptions.BinaryLocation= System.Windows.Forms.Application.StartupPath+"\\Log";
+                
+
+
+                
+                IWebDriver driver = new ChromeDriver(driverService, chromeOptions);
+
+
+                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+
+
+                //Urller içerisinden bottom kaldırılıp maçların esas linkleri alınacak sonra işleme dahil edilecek
+
+                foreach (var url in urlList)
                 {
-                    isbottom = dokuman.DocumentNode.SelectSingleNode("//*[@id='allCnt']/app-bottom-menu/div[1]") != null ? true : false;
-                    if (isbottom)
+                    HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
+                    driver.Navigate().GoToUrl(url);
+                    Thread.Sleep(2500);
+                    if (!string.IsNullOrEmpty(driver.PageSource))
                     {
-                        var bottom = driver.FindElement(By.XPath("//*[@id='allCnt']/app-bottom-menu/div[1]"));
-                        js.ExecuteScript("arguments[0].style.display = 'none';", bottom);
-                    }
-
-
-                    //Maçları alıyor buradan url leri alacağız 
-                    ////div[contains(@class,'fixture-container')]//div[contains(@class,'match-content')]
-
-                    dokuman.LoadHtml(driver.PageSource);
-                    dokuman.OptionStopperNodeName = url.ToString();
-                    var matches = dokuman.DocumentNode.SelectNodes("//div[contains(@class,'fixture-container')]//div[contains(@class,'match-content')]");
-
-                    if (matches.Count>0)
-                    {
-                        foreach (HtmlNode item in matches)
+                        isbottom = dokuman.DocumentNode.SelectSingleNode("//*[@id='allCnt']/app-bottom-menu/div[1]") != null ? true : false;
+                        if (isbottom)
                         {
-                            //her maçın istediğimiz formattıki Url'ini almak için 
-                            var MatchUrl =item.SelectSingleNode(item.XPath + "/a").GetAttributes("href");
-                            var fullUrl = url.Replace("m.", "");
-                            var uri = new Uri(fullUrl);
-                            var datta = "www."+uri.Host + MatchUrl.FirstOrDefault().Value;
-
-                            //bunuda listeye at kontrolleri ve tekrarları yap linkler tamam
-
+                            var bottom = driver.FindElement(By.XPath("//*[@id='allCnt']/app-bottom-menu/div[1]"));
+                            js.ExecuteScript("arguments[0].style.display = 'none';", bottom);
                         }
-                    }
-                    /*
-                    if (!yuklendiMi(dokuman))
-                    {
-                        driver.Navigate().GoToUrl(url);
-                        Thread.Sleep(2500);
+
                         dokuman.LoadHtml(driver.PageSource);
+                        dokuman.OptionStopperNodeName = url.ToString();
 
-                    }*/
+                        var matches = dokuman.DocumentNode.SelectNodes("//div[contains(@class,'fixture-container')]//div[contains(@class,'match-content')]");
+
+                        if (matches != null && matches.Count > 0)
+                        {
+                            foreach (HtmlNode item in matches)
+                            {
+                                //her maçın istediğimiz formattıki Url'ini almak için 
+                                var MatchUrl = item.SelectSingleNode(item.XPath + "/a").GetAttributes("href");
+                                if (MatchUrl != null)
+                                {
+                                    var fullUrl = url.Replace("m.", "");
+                                    var uri = new Uri(fullUrl);
+                                    var newUrl = "www." + uri.Host + MatchUrl.FirstOrDefault().Value;
+                                    newUrlList.Add(newUrl);
+
+                                }
+                                else
+                                {
+                                    var log = new LoggerTxt();
+                                    log.Log(Message.GETIR_MUSABAKALARI_MACIN_URLSI_HATA + " " + url.ToString());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // errror basacak maçlar gelmedi  link arzıla veya maç listelenmemiş
+                            var log = new LoggerTxt();
+                            log.Log(Message.LINK_ARIZALI_VEYA_MACYOK + " " + url.ToString());
+                        }
+
+                    }
+                    else
+                    {
+                        var log = new LoggerTxt();
+                        log.Log(Message.PAGE_SOURCE_BOS_02);
+                    }
 
                 }
-                else
-                {
-                    var log = new LoggerTxt();
-                    log.Log(Message.PAGE_SOURCE_BOS);
-                }
-                returnDocuments.Add(dokuman);
+
+
+
+                driver.Quit();
+                return new DataResult<List<string>>(newUrlList, true);
+            }
+            catch (Exception hata)
+            {
+                var log = new LoggerTxt();
+                log.Log(hata.ToString() + Message.GETIR_MUSABAKALARI_TRYCATCH);
             }
 
-            driver.Quit();
-
-            return new DataResult<List<string>>(new List<string>(), true);
+            return new DataResult<List<string>>(new List<string>(), false);
         }
 
 
@@ -200,30 +219,35 @@ namespace ScrapWeb.Controller
             {
                 var driverService = ChromeDriverService.CreateDefaultService();
                 driverService.HideCommandPromptWindow = true;
-               
+                              
 
                 var chromeOptions = new ChromeOptions();
                 chromeOptions.AddArguments("headless");
                 
                 var path = System.Windows.Forms.Application.StartupPath;
-                IWebDriver driver = new ChromeDriver(driverService,chromeOptions);
+                IWebDriver driver2 = new ChromeDriver(driverService,chromeOptions);
               
                 foreach (var url in urlList)
                 {
                     HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
-                    driver.Navigate().GoToUrl(url);
+                    
+                   
+                    driver2.Navigate().GoToUrl(url);
+
+                
+
                     Thread.Sleep(2500);
-                    if (!string.IsNullOrEmpty(driver.PageSource))
+                    if (!string.IsNullOrEmpty(driver2.PageSource))
                     {
                        // var isdata = wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
                         
-                            dokuman.LoadHtml(driver.PageSource);
+                            dokuman.LoadHtml(driver2.PageSource);
                             dokuman.OptionStopperNodeName = url.ToString();
                           if (!yuklendiMi(dokuman))
                            {
-                               driver.Navigate().GoToUrl(url);
+                            driver2.Navigate().GoToUrl(url);
                                Thread.Sleep(2500);
-                               dokuman.LoadHtml(driver.PageSource);
+                               dokuman.LoadHtml(driver2.PageSource);
 
                            }
 
@@ -235,13 +259,9 @@ namespace ScrapWeb.Controller
                     }
                     returnDocuments.Add(dokuman);
                 }
-                /*
-                            var wait = new WebDriverWait(driver, TimeSpan.FromMilliseconds(timeout));
-                            wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
-                            Thread.Sleep(2000);
-                            */
+            
 
-                driver.Quit();
+                driver2.Quit();
             }
             catch (Exception hata)
             {
@@ -368,5 +388,7 @@ namespace ScrapWeb.Controller
 
    
         }
+
+        
     }
 }
