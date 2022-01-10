@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 using ScrapWeb.Constants;
 using ScrapWeb.Helper.Log;
@@ -119,17 +120,14 @@ namespace ScrapWeb.Controller
             try
             {
                 bool isbottom = false;
-                var driverService = ChromeDriverService.CreateDefaultService();
+                var driverService = ChromeDriverService.CreateDefaultService(System.Windows.Forms.Application.StartupPath);
                 driverService.HideCommandPromptWindow = true;
                 
-
                 List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
                 var chromeOptions = new ChromeOptions();
                 chromeOptions.AddArguments("headless");
                // chromeOptions.BinaryLocation= System.Windows.Forms.Application.StartupPath+"\\Log";
                 
-
-
                 
                 IWebDriver driver = new ChromeDriver(driverService, chromeOptions);
 
@@ -168,7 +166,7 @@ namespace ScrapWeb.Controller
                                 {
                                     var fullUrl = url.Replace("m.", "");
                                     var uri = new Uri(fullUrl);
-                                    var newUrl = "www." + uri.Host + MatchUrl.FirstOrDefault().Value;
+                                    var newUrl = uri.Host + MatchUrl.FirstOrDefault().Value;
                                     newUrlList.Add(newUrl);
 
                                 }
@@ -217,22 +215,22 @@ namespace ScrapWeb.Controller
             List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
             try
             {
-                var driverService = ChromeDriverService.CreateDefaultService();
+                var driverService = FirefoxDriverService.CreateDefaultService(System.Windows.Forms.Application.StartupPath);
                 driverService.HideCommandPromptWindow = true;
                               
 
-                var chromeOptions = new ChromeOptions();
-                chromeOptions.AddArguments("headless");
-                
-                var path = System.Windows.Forms.Application.StartupPath;
-                IWebDriver driver2 = new ChromeDriver(driverService,chromeOptions);
+                var fireFoxOptions = new FirefoxOptions();
+                //fireFoxOptions.AddArgument("-headless");
+               
+                IWebDriver driver2 = new FirefoxDriver(driverService, fireFoxOptions);
               
                 foreach (var url in urlList)
                 {
                     HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
                     
                    
-                    driver2.Navigate().GoToUrl(url);
+                    driver2.Navigate().GoToUrl("https://" + url);
+                
 
                 
 
@@ -388,6 +386,10 @@ namespace ScrapWeb.Controller
 
    
         }
+
+
+
+
 
         
     }

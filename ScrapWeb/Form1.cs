@@ -1,8 +1,10 @@
 ﻿using ScrapWeb.Controller;
+using ScrapWeb.Helper.Log;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -62,7 +64,7 @@ namespace ScrapWeb
             ///var data = "https://gizabet741.com/tr/bet/fixture-detail/36883182";
 
                 //macLinkleri.Add(data);
-                if (macLinkleri.Data.Count>0)
+                if (macLinkleri.Data.Count>0 && killProcessOfChrome())
                 {
                     var pageSources = get.GetPageSources(macLinkleri.Data);
 
@@ -109,7 +111,28 @@ namespace ScrapWeb
         }
 
 
+        private bool killProcessOfChrome() {
 
+            try
+            {
+                Process[] chromeDriverProcesses = Process.GetProcessesByName("chromedriver");
+                foreach (var chromeDriverProcess in chromeDriverProcesses)
+                {
+                    chromeDriverProcess.Kill();
+                }
+               
+            }
+            catch (Exception hata)
+            {
+
+                var log = new LoggerTxt();
+                log.Log(hata.ToString() + "Chrome Processleri Kill Olmadı.");
+                return false;
+            }
+
+
+            return true;
+        }
 
 
 
