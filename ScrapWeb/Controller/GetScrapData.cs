@@ -243,7 +243,7 @@ namespace ScrapWeb.Controller
                             dokuman.OptionStopperNodeName = url.ToString();
                           if (!yuklendiMi(dokuman))
                            {
-                            driver2.Navigate().GoToUrl(url);
+                            driver2.Navigate().GoToUrl("https://" +url);
                                Thread.Sleep(2500);
                                dokuman.LoadHtml(driver2.PageSource);
 
