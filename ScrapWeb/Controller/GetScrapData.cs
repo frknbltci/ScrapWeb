@@ -220,7 +220,7 @@ namespace ScrapWeb.Controller
                               
 
                 var fireFoxOptions = new FirefoxOptions();
-                //fireFoxOptions.AddArgument("-headless");
+                fireFoxOptions.AddArgument("-headless");
                
                 IWebDriver driver2 = new FirefoxDriver(driverService, fireFoxOptions);
               
