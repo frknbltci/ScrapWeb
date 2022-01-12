@@ -40,13 +40,13 @@ namespace ScrapWeb
         
         private void timer1_Tick(object sender, EventArgs e)
         {
-            run();
-            //Task.Run(() =>
-            //{
+            //run();
+            Task.Run(() =>
+            {
 
-            //    run();
+                run();
 
-            //});
+            });
         }
 
         private void run()
