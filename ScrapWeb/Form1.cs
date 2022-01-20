@@ -99,7 +99,7 @@ namespace ScrapWeb
         private void button1_Click(object sender, EventArgs e)
         {
             textBox1.Text = System.Windows.Forms.Application.StartupPath.ToString();
-            killProcessOfChrome();
+            
            // MessageBox.Show(System.Windows.Forms.Application.StartupPath.ToString());
             if (dakikaAl.Value>0)
             {
@@ -122,10 +122,8 @@ namespace ScrapWeb
                 chromeDriverProcesses =chromeDriverProcesses.OrderByDescending(x => x.StartTime).ToArray();
                 foreach (var chromeDriverProcess in data)
                 {
-                    
                         chromeDriverProcess.Kill();
                     
-
                 }
                
             }
