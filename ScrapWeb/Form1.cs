@@ -34,7 +34,7 @@ namespace ScrapWeb
         {
 
             timer1.Enabled = false;
-
+            timer2.Enabled = false;
 
         }
         
@@ -64,7 +64,7 @@ namespace ScrapWeb
             ///var data = "https://gizabet741.com/tr/bet/fixture-detail/36883182";
 
                 //macLinkleri.Add(data);
-                if (macLinkleri.Data.Count>0 && killProcessOfChrome())
+                if (macLinkleri !=null && macLinkleri.Data.Count>0)
                 {
                     var pageSources = get.GetPageSources(macLinkleri.Data);
 
@@ -99,28 +99,33 @@ namespace ScrapWeb
         private void button1_Click(object sender, EventArgs e)
         {
             textBox1.Text = System.Windows.Forms.Application.StartupPath.ToString();
-            
+          
            // MessageBox.Show(System.Windows.Forms.Application.StartupPath.ToString());
             if (dakikaAl.Value>0)
             {
                 timer1.Interval= (int)TimeSpan.FromMinutes((double)dakikaAl.Value).TotalMilliseconds;
+                timer2.Interval= (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
 
                 timer1.Enabled = true;
+                timer2.Enabled = true;
+        
                 timer1.Start();
+                timer2.Start();
             } 
         }
 
 
-        private bool killProcessOfChrome() {
+        private bool killProcessOfChromeAndFirefox() {
 
             try
             {
-                //firefox,chrome9
+                
+                //firefox,chrome
                 Process[] chromeDriverProcesses = Process.GetProcessesByName("chrome");
                 Process[] firefoxDriverProcesses = Process.GetProcessesByName("firefox");
-               var data= chromeDriverProcesses.Concat(firefoxDriverProcesses);
+                var processList= chromeDriverProcesses.Concat(firefoxDriverProcesses);
                 chromeDriverProcesses =chromeDriverProcesses.OrderByDescending(x => x.StartTime).ToArray();
-                foreach (var chromeDriverProcess in data)
+                foreach (var chromeDriverProcess in processList)
                 {
                         chromeDriverProcess.Kill();
                     
@@ -129,16 +134,15 @@ namespace ScrapWeb
             }
             catch (Exception hata)
             {
-
+                
                 var log = new LoggerTxt();
-                log.Log(hata.ToString() + "Chrome Processleri Kill Olmadı.");
+                log.Log(hata.ToString() + "Chrome ve Firefox processleri kill olmadı veya olmasına rağmen hata basıldı dikkate almayın.");
                 return false;
             }
 
 
             return true;
         }
-
 
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -165,6 +169,14 @@ namespace ScrapWeb
         private void groupBox1_Enter(object sender, EventArgs e)
         {
 
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            Task.Run(() =>
+            {
+                killProcessOfChromeAndFirefox();
+            });
         }
     }
 }

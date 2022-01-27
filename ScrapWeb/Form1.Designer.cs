@@ -38,6 +38,7 @@ namespace ScrapWeb
             this.dakikaAl = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.timer2 = new System.Windows.Forms.Timer(this.components);
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dakikaAl)).BeginInit();
             this.SuspendLayout();
@@ -102,6 +103,10 @@ namespace ScrapWeb
             this.textBox1.Size = new System.Drawing.Size(517, 20);
             this.textBox1.TabIndex = 5;
             // 
+            // timer2
+            // 
+            this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -132,6 +137,7 @@ namespace ScrapWeb
         private System.Windows.Forms.NumericUpDown dakikaAl;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Timer timer2;
     }
 }
 
