@@ -95,14 +95,15 @@ namespace ScrapWeb
         }
         
         
-
+        //Kaydet Butonu
         private void button1_Click(object sender, EventArgs e)
         {
             textBox1.Text = System.Windows.Forms.Application.StartupPath.ToString();
-          
-           // MessageBox.Show(System.Windows.Forms.Application.StartupPath.ToString());
-            if (dakikaAl.Value>0)
+
+            // MessageBox.Show(System.Windows.Forms.Application.StartupPath.ToString());
+               if (dakikaAl.Value>0)
             {
+      
                 timer1.Interval= (int)TimeSpan.FromMinutes((double)dakikaAl.Value).TotalMilliseconds;
                 timer2.Interval= (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
 
@@ -111,7 +112,9 @@ namespace ScrapWeb
         
                 timer1.Start();
                 timer2.Start();
-            } 
+
+                MessageBox.Show("Program Başlatıldı..");
+            }
         }
 
 

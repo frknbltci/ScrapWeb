@@ -116,22 +116,21 @@ namespace ScrapWeb.Controller
             //try catch
 
             List<string> newUrlList = new List<string>();
+            var driverService = FirefoxDriverService.CreateDefaultService(System.Windows.Forms.Application.StartupPath);
+            driverService.HideCommandPromptWindow = true;
+            var firefoxOptions = new FirefoxOptions();
+            firefoxOptions.AddArgument("-headless");
+            IWebDriver driver = new FirefoxDriver(driverService, firefoxOptions);
 
             try
             {
                 bool isbottom = false;
-                var driverService = ChromeDriverService.CreateDefaultService(System.Windows.Forms.Application.StartupPath);
-                driverService.HideCommandPromptWindow = true;
-                
+               
                 List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
-                var chromeOptions = new ChromeOptions();
-                chromeOptions.AddArguments("headless");
+              
                // chromeOptions.BinaryLocation= System.Windows.Forms.Application.StartupPath+"\\Log";
+                        
                 
-                
-                IWebDriver driver = new ChromeDriver(driverService, chromeOptions);
-
-
                 IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
 
@@ -166,8 +165,10 @@ namespace ScrapWeb.Controller
                                 {
                                     var fullUrl = url.Replace("m.", "");
                                     var uri = new Uri(fullUrl);
+                                    var klasorName = uri.Segments[uri.Segments.Length - 2] + uri.Segments[uri.Segments.Length - 1].ToString();
+                                    var editKlasor = !string.IsNullOrEmpty(klasorName) ? klasorName.Replace("/", "-") : "klasornameDonmedi" ;
                                     var newUrl = uri.Host + MatchUrl.FirstOrDefault().Value;
-                                    newUrlList.Add(newUrl);
+                                    newUrlList.Add(newUrl+"*"+klasorName);
 
                                 }
                                 else
@@ -200,8 +201,13 @@ namespace ScrapWeb.Controller
             }
             catch (Exception hata)
             {
+                driver.Quit();
                 var log = new LoggerTxt();
                 log.Log(hata.ToString() + Message.GETIR_MUSABAKALARI_TRYCATCH);
+            }
+            finally
+            {
+                driver.Quit();
             }
 
             return new DataResult<List<string>>(new List<string>(), false);
@@ -212,42 +218,44 @@ namespace ScrapWeb.Controller
         public DataResult<List<HtmlDocument>> GetPageSources(List<string> urlList)
         {
 
+            var driverService = ChromeDriverService.CreateDefaultService(System.Windows.Forms.Application.StartupPath);
+            driverService.HideCommandPromptWindow = true;
+
+
+            var chromeOptions = new ChromeOptions();
+            chromeOptions.AddArgument("headless");
+
+            IWebDriver driver2 = new ChromeDriver(driverService, chromeOptions);
             List<HtmlDocument> returnDocuments = new List<HtmlDocument>();
             try
             {
-                var driverService = FirefoxDriverService.CreateDefaultService(System.Windows.Forms.Application.StartupPath);
-                driverService.HideCommandPromptWindow = true;
-                              
-
-                var fireFoxOptions = new FirefoxOptions();
-                fireFoxOptions.AddArgument("-headless");
                
-                IWebDriver driver2 = new FirefoxDriver(driverService, fireFoxOptions);
               
                 foreach (var url in urlList)
                 {
                     HtmlAgilityPack.HtmlDocument dokuman = new HtmlAgilityPack.HtmlDocument();
-                    
+
+                    var data = url.Split('*')[0].ToString();
+                    driver2.Navigate().GoToUrl("https://" + url.Split('*')[0]);
+                
                    
-                    driver2.Navigate().GoToUrl("https://" + url);
-                
-
-                
-
-                    Thread.Sleep(2500);
+                    Thread.Sleep(1500);
                     if (!string.IsNullOrEmpty(driver2.PageSource))
                     {
                        // var isdata = wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
                         
                             dokuman.LoadHtml(driver2.PageSource);
-                            dokuman.OptionStopperNodeName = url.ToString();
+                            dokuman.OptionStopperNodeName = url.ToString(); //.Split('*')[0].ToString();
+                        
+                        
                           if (!yuklendiMi(dokuman))
                            {
-                            driver2.Navigate().GoToUrl("https://" +url);
-                               Thread.Sleep(2500);
+                               driver2.Navigate().GoToUrl("https://" +url.Split('*')[0].ToString());
+                               Thread.Sleep(1500);
                                dokuman.LoadHtml(driver2.PageSource);
+                               dokuman.OptionStopperNodeName = url.ToString();
 
-                           }
+                        }
 
                     }
                     else
@@ -263,9 +271,14 @@ namespace ScrapWeb.Controller
             }
             catch (Exception hata)
             {
+                 driver2.Quit();
                 var log = new LoggerTxt();
                 log.Log(hata.ToString() + Message.PAGE_SOURCE_TRYCATCH);
                 
+            }
+            finally
+            {
+                driver2.Quit();
             }
 
             
@@ -318,7 +331,13 @@ namespace ScrapWeb.Controller
 
         public void WriteFileTxtBahis(List<BahisModel> bahisModel, string url)
         {
-            var fileName = "Bahis/" + DateTime.Now.ToString("dd.MM.yyyy") + " "+ url.Substring(url.Length-8);
+            var directory = url.Split('*')[1].ToString();
+
+            if (!Directory.Exists("Bahis/"+directory))
+            {
+                Directory.CreateDirectory("Bahis/" + directory);
+            }
+            var fileName = "Bahis/"+directory +"/" + DateTime.Now.ToString("dd.MM.yyyy") + " "+ url.Split('*')[0].ToString().Substring(url.Split('*')[0].ToString().Length-8);
 
             if (bahisModel.Count==0)
             {
@@ -333,6 +352,7 @@ namespace ScrapWeb.Controller
             {
                 foreach (var item in bahisModel)
                 {
+                    
                     File.AppendAllText(fileName, Environment.NewLine + "**************************" + Environment.NewLine);
                     File.AppendAllText(fileName, item.Baslik);
                     File.AppendAllText(fileName, DateTime.Now.ToString("dd.MM.yyyy HH:mm"));
@@ -386,7 +406,6 @@ namespace ScrapWeb.Controller
 
    
         }
-
 
 
 
