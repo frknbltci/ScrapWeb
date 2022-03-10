@@ -239,7 +239,7 @@ namespace ScrapWeb.Controller
                     driver2.Navigate().GoToUrl("https://" + url.Split('*')[0]);
                 
                    
-                    Thread.Sleep(1500);
+                    Thread.Sleep(2500);
                     if (!string.IsNullOrEmpty(driver2.PageSource))
                     {
                        // var isdata = wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
@@ -251,7 +251,7 @@ namespace ScrapWeb.Controller
                           if (!yuklendiMi(dokuman))
                            {
                                driver2.Navigate().GoToUrl("https://" +url.Split('*')[0].ToString());
-                               Thread.Sleep(1500);
+                               Thread.Sleep(2000);
                                dokuman.LoadHtml(driver2.PageSource);
                                dokuman.OptionStopperNodeName = url.ToString();
 
